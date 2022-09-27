@@ -1,0 +1,104 @@
+name: New release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        type: choice
+        description: Version bump on main for NEXT release
+        options:
+        - major
+        - minor
+        - patch
+        default: 'minor'
+        required: true
+      
+      release_version:
+        type: input
+        description: Release version. 
+
+env:
+  DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+
+jobs:
+  # version bump requires macos to update the xcconfig file
+  main:
+    name: Start Release Process
+    runs-on: ubuntu-latest
+    outputs:
+      output_release_version: ${{ steps.step_release_version.outputs.release_version }}
+      output_next_version: ${{ steps.step_next_version.outputs.next_version }}
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: prepare for changes
+        run: |
+          git config --global user.email "${GITHUB_ACTOR}"
+          git config --global user.name "${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: set env release version
+        run: |
+          echo "release_version=${{ github.event.inputs.release_version }}" >> $GITHUB_ENV
+          echo "release_branch=release/${{ github.event.inputs.release_version }}" >> $GITHUB_ENV
+
+      - name: Merge PRs with release label
+        uses: luisgj/monorepo-merge@v0.0.1
+        with:
+          target-label: 'release1'
+          repo-token: ${{ secrets.REPOTOKEN }}
+          integration-branch: 'release1'
+          main-branch: 'main'
+
+
+
+      # - name: verify env release variables
+      #   run: |
+      #     echo "Release Version: ${{ env.release_version }}"
+      #     echo "Release Branch: ${{ env.release_branch }}"
+
+      # - name: set release version output
+      #   id: step_release_version
+      #   run: echo "::set-output name=release_version::${{ env.release_version }}"
+
+
+      # - name: version bump
+      #   run: npm version ${{ github.event.inputs.version_bump }}
+
+      # - name: set env next version
+      #   # TODO: use your version script here
+      #   run: |
+      #     NEXT_VERSION=`node -p "require('./package').version"`
+      #     echo "next_version=$NEXT_VERSION" >> $GITHUB_ENV
+
+      # - name: verify env next version
+      #   run: |
+      #     echo "Next Version: ${{ env.next_version }}"
+
+      # - name: set next version output
+      #   id: step_next_version
+      #   run: echo "::set-output name=next_version::${{ env.next_version }}"
+
+      # # https://github.com/marketplace/actions/create-pull-request
+      # - name: create version bump PR
+      #   id: create-pr
+      #   uses: peter-evans/create-pull-request@v4
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     base: ${{ github.event.repository.default_branch }}
+      #     commit-message: "New release ${{ env.release_version }}"
+      #     title: "[Automated] Version Bump to ${{ env.next_version }}"
+      #     body: |
+      #       **Version bump `main` to `${{ env.next_version }}`**
+
+      #       This pull request was initiated by @${{ github.actor }}.
+      #     branch: ${{ env.release_branch }}
+      #     delete-branch: true
+      #     draft: false

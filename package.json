@@ -1,0 +1,23 @@
+{
+  "name": "@dpolyakov/frontend-ci",
+  "version": "1.0.0",
+  "description": "Example of CI on Github Actions for frontend projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dpolyakov/ci.git"
+  },
+  "keywords": [
+    "ci",
+    "github"
+  ],
+  "author": "dpolyakov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dpolyakov/ci/issues"
+  },
+  "homepage": "https://github.com/dpolyakov/ci#readme"
+}
