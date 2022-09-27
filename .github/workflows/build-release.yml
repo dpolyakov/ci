@@ -1,0 +1,33 @@
+name: Autodev
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    types: [labeled, unlabeled, opened, closed]
+
+jobs:
+  autodev:
+    name: Build Dev Branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: prepare for changes
+        run: |
+          git config --global user.email "${GITHUB_ACTOR}"
+          git config --global user.name "${GITHUB_ACTOR}@users.noreply.github.com"
+          
+
+      - name: Autodev
+        uses: Staffbase/autodev-action@v1.5.1
+        with:
+          # The token used to fetch the pull requests from the GitHub API
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comments: true
+          success_comment: '🎉 The action successfully merged all branches with the dev label.'
+          failure_comment: '⚠️ Something went wrong.'          
